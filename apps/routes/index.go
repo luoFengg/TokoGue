@@ -7,12 +7,13 @@ import (
 
 	authControllers "tokogue-api/controllers/auth"
 	orderControllers "tokogue-api/controllers/orders"
+	paymentControllers "tokogue-api/controllers/payments"
 	productControllers "tokogue-api/controllers/products"
 
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(productController productControllers.ProductController, authController authControllers.AuthController, orderController orderControllers.OrderController, cfg *config.Config) *gin.Engine {
+func NewRouter(productController productControllers.ProductController, authController authControllers.AuthController, orderController orderControllers.OrderController, paymentController paymentControllers.PaymentController, cfg *config.Config) *gin.Engine {
 	router := gin.Default()
 
 
@@ -32,6 +33,10 @@ func NewRouter(productController productControllers.ProductController, authContr
 
 	productsRouter.GET("/:id", productController.FindById)
 	productsRouter.GET("/", productController.FindAll)
+
+	// Webhook route for payment gateway
+	webhookRouter := router.Group("v1/webhook")
+	webhookRouter.POST("/payments", paymentController.HandleWebhook)
 
 
 	// Auth routes

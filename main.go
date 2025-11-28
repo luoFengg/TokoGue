@@ -18,6 +18,9 @@ import (
 	authServices "tokogue-api/services/auth"
 	orderServices "tokogue-api/services/orders"
 	productServices "tokogue-api/services/products"
+
+	paymentControllers "tokogue-api/controllers/payments"
+	paymentServices "tokogue-api/services/payments"
 )
 
 func main() {
@@ -41,8 +44,10 @@ func main() {
 	orderService := orderServices.NewOrderServiceImpl(orderRepository, productRepository, userRepository, db, *config)
 	orderController := orderControllers.NewOrderControllerImpl(orderService)
 
+	paymentService := paymentServices.NewPaymentServiceImpl(orderRepository, db, *config)
+	paymentController := paymentControllers.NewPaymentControllerImpl(paymentService)
 	// initialize router
-	router := routes.NewRouter(productController, authController, orderController, config)
+	router := routes.NewRouter(productController, authController, orderController, paymentController,config)
 
 	// start the server
 	address := fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port)

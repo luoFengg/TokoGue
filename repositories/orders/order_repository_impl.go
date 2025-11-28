@@ -35,3 +35,15 @@ func (repository *OrderRepositoryImpl) UpdatePaymentURL(ctx context.Context, pay
 	err := repository.DB.WithContext(ctx).Model(&domain.Order{}).Where("payment_url = ?", paymentURL).Update("payment_url", paymentURL).Error
 	return err
 }
+
+func (repository *OrderRepositoryImpl) UpdateStatus(ctx context.Context, tx *gorm.DB, orderID string, status string) error {
+	// 1. Tentukan mau pakai koneksi yang mana
+    var db *gorm.DB = repository.DB // Default pakai koneksi biasa
+    if tx != nil {
+        db = tx // Kalau ada request transaksi (tx), pakai tx
+    }
+	
+	
+	err := db.WithContext(ctx).Model(&domain.Order{}).Where("id = ?", orderID).Update("status", status).Error
+	return err
+}
