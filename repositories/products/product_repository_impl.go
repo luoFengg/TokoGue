@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"tokogue-api/exceptions"
 	"tokogue-api/models/domain"
 
 	"gorm.io/gorm"
@@ -65,9 +66,9 @@ func (repository *ProductRepositoryImpl) Delete(ctx context.Context, productId s
 }
 
 func (repository *ProductRepositoryImpl) UpdateStock(ctx context.Context, tx *gorm.DB, productID string, quantity int) error {
-	err := tx.WithContext(ctx).Model(&domain.Product{}).Where("id = ?", productID).UpdateColumn("stock", gorm.Expr("stock - ?", quantity)).Error
-	if err != nil {
-		return err
+	 result := tx.WithContext(ctx).Model(&domain.Product{}).Where("id = ? AND stock >= ?", productID, quantity).UpdateColumn("stock", gorm.Expr("stock - ?", quantity))
+	if result.RowsAffected == 0 {
+		return exceptions.NewBadRequestError("stock tidak mencukupi atau produk tidak ditemukan")
 	}
-	return nil
+	return result.Error
 }

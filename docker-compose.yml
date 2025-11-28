@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  # 1. SERVICE DATABASE (POSTGRES)
+  db:
+    image: postgres:15
+    container_name: tokogue-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres # Sesuaikan dengan .env kamu nanti
+      POSTGRES_DB: tokogue
+    ports:
+      - "5432:5432" # Port Luar : Port Dalam
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Biar data gak hilang pas container mati
+
+    # --- TAMBAHAN BARU: HEALTHCHECK ---
+    # Cek kesehatan DB tiap 5 detik pakai perintah pg_isready
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    # ----------------------------------
+
+  # 2. SERVICE CACHE (REDIS)
+  redis:
+    image: redis:alpine
+    container_name: tokogue-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # 3. SERVICE APLIKASI KITA (GOLANG)
+  app:
+    container_name: tokogue-app
+    build: . # Build dari Dockerfile di folder ini
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env # Baca config dari file .env
+    depends_on:
+      db:
+        condition: service_healthy # <--- TUNGGU SAMPAI SEHAT (bukan cuma start)
+      redis:
+        condition: service_started
+
+# Volume buat nyimpen data DB biar permanen
+volumes:
+  postgres_data:

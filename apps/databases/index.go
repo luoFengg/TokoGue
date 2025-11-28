@@ -10,7 +10,7 @@ import (
 )
 
 func NewDBConnection(config *config.Config) *gorm.DB {
-dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=Asia/Jakarta",
+dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=UTC",
 	config.Databases.Host,
 	config.Databases.User,
 	config.Databases.Password,

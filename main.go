@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"tokogue-api/apps/databases"
+	"tokogue-api/apps/redis"
 	"tokogue-api/apps/routes"
 	"tokogue-api/config"
 
@@ -31,9 +32,15 @@ func main() {
 	// initialize database
 	db := databases.NewDBConnection(config)
 
+	// initialize redis client
+	redisClient, err := redis.ConnectRedis(*config)
+	if err != nil {
+		log.Fatalf("Failed to connect to Redis: %v", err)
+	}
+
 	// Initialize repository, service, and controller
 	productRepository := productRepositories.NewProductRepositoryImpl(db)
-	productService := productServices.NewProductServiceImpl(productRepository, db)
+	productService := productServices.NewProductServiceImpl(productRepository, db, redisClient)
 	productController := productControllers.NewProductControllerImpl(productService)
 
 	userRepository := userRepositories.NewUserRepositoryImpl(db)
@@ -52,7 +59,7 @@ func main() {
 	// start the server
 	address := fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port)
 
-	err := router.Run(address)
+	err = router.Run(address)
 	if err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}

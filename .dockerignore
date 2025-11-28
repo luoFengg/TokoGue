@@ -1,0 +1,9 @@
+# Abaikan folder git
+.git
+
+# Abaikan file env lokal (Bahaya kalau kebawa ke publik)
+.env
+
+# Abaikan folder hasil build lokal
+tmp
+vendor
